@@ -1,0 +1,51 @@
+# Binários e artefatos de build
+/pocketserve
+/pocketserve-arm64
+/pocketserve-arm64-*
+/pocketserve-*
+*.exe
+*.test
+/dist/
+/coverage.out
+/coverage.txt
+
+# Dados de execução (nunca versionar)
+config.json
+config.json.tmp
+shares.json
+shares.json.tmp
+tokens.json
+tokens.json.tmp
+activity.jsonl
+revoked_sessions.json
+revoked_sessions.json.tmp
+*.log
+server.pid
+watchdog.pid
+watchdog.stop
+.pocketserve/
+.pocketserve-sync/
+.pocketserve-trash/
+.pocketserve-backups/
+.pocketserve-tmp/
+
+# Segredos e ambiente local
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+tunnel-credentials.json
+cloudflared.yml
+cookies.txt
+
+# Pacotes e arquivos temporários
+*.tgz
+*.tar.gz
+*.zip
+*.swp
+*~
+
+# Sistema
+.DS_Store
+Thumbs.db

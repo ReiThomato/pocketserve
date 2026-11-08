@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0d">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Servidor pessoal de arquivos do seu celular.">
+<title>PocketServe</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg?v=2" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="boot" class="boot">
+  <div class="boot-logo" data-logo></div>
+  <div class="boot-text">PocketServe</div>
+  <div class="spinner"></div>
+</div>
+
+<section id="auth" class="auth" hidden>
+  <div class="auth-bg"><span></span><span></span><span></span></div>
+  <div class="auth-card" id="auth-card"></div>
+</section>
+
+<div id="shell" class="shell" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo" data-logo></div>
+      <div class="brand-text">
+        <strong id="brand-name">PocketServe</strong>
+        <span>Servidor pessoal</span>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <a href="#/dashboard" data-page="dashboard"><span class="ni" data-icon="home"></span>Início</a>
+      <a href="#/files" data-page="files"><span class="ni" data-icon="folder"></span>Arquivos</a>
+      <a href="#/shares" data-page="shares"><span class="ni" data-icon="share"></span>Compartilhamentos</a>
+      <a href="#/activity" data-page="activity"><span class="ni" data-icon="activity"></span>Atividade</a>
+      <a href="#/trash" data-page="trash"><span class="ni" data-icon="trash"></span>Lixeira</a>
+      <a href="#/duplicates" data-page="duplicates"><span class="ni" data-icon="copy"></span>Duplicados</a>
+      <a href="#/access" data-page="access"><span class="ni" data-icon="wifi"></span>Acesso</a>
+      <a href="#/settings" data-page="settings"><span class="ni" data-icon="settings"></span>Configurações</a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="status-line"><span class="dot live"></span><span id="side-status">Servidor online</span></div>
+      <div class="tiny" id="side-uptime">—</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-logo" data-logo></span>
+        <div class="topbar-brand">
+          <strong id="topbar-name">PocketServe</strong>
+          <span id="topbar-sub">Visão geral</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" data-act="qr-access" title="Acesso rápido" aria-label="Acesso rápido"><span data-icon="qr"></span></button>
+        <button class="btn ghost small hide-sm" data-act="upload"><span data-icon="upload"></span>Enviar</button>
+        <button class="user-chip" data-act="logout" title="Sair" aria-label="Sair">
+          <span class="avatar">A</span>
+          <span class="hide-sm">admin</span>
+          <span data-icon="logout" class="logout-ico"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section id="page-dashboard" class="page"></section>
+      <section id="page-files" class="page"></section>
+      <section id="page-shares" class="page"></section>
+      <section id="page-activity" class="page"></section>
+      <section id="page-access" class="page"></section>
+      <section id="page-trash" class="page"></section>
+      <section id="page-duplicates" class="page"></section>
+      <section id="page-settings" class="page"></section>
+    </div>
+  </div>
+
+  <nav class="mobile-nav" id="mobile-nav">
+    <a href="#/dashboard" data-page="dashboard"><span class="ni" data-icon="home"></span><span>Início</span></a>
+    <a href="#/files" data-page="files"><span class="ni" data-icon="folder"></span><span>Arquivos</span></a>
+    <a href="#/shares" data-page="shares"><span class="ni" data-icon="share"></span><span>Links</span></a>
+    <a href="#/access" data-page="access"><span class="ni" data-icon="wifi"></span><span>Acesso</span></a>
+    <a href="#/settings" data-page="settings"><span class="ni" data-icon="settings"></span><span>Ajustes</span></a>
+  </nav>
+</div>
+
+<div id="modal-root"></div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<div id="ctx-root"></div>
+<input id="file-input" type="file" multiple hidden>
+<input id="folder-input" type="file" webkitdirectory hidden>
+<div id="drop-overlay" class="drop-overlay" hidden>
+  <div class="drop-box">
+    <div class="drop-icon" data-icon="upload"></div>
+    <strong>Solte para enviar</strong>
+    <span>Arquivos e pastas serão salvos em <b id="drop-dest">Armazenamento</b></span>
+  </div>
+</div>
+
+<noscript><div class="noscript">O PocketServe precisa de JavaScript para funcionar.</div></noscript>
+<script src="/app.js" defer></script>
+<script src="/pages.js" defer></script>
+<script src="/files.js" defer></script>
+</body>
+</html>
