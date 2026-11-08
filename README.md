@@ -1,4 +1,4 @@
-# PocketServe
+# PocketServe - Beta
 
 **Seu servidor pessoal de bolso.**
 
