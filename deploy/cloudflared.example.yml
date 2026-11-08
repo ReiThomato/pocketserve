@@ -1,0 +1,31 @@
+# PocketServe — exemplo de configuração do Cloudflare Tunnel
+#
+# Este arquivo é apenas um MODELO. Copie para o aparelho, substitua os
+# valores em MAIÚSCULAS pelos seus e nunca versione o arquivo final: ele
+# contém o ID do túnel e o caminho das credenciais.
+#
+# Passo a passo completo em docs/ACESSO-REMOTO.md.
+
+tunnel: SEU_TUNNEL_ID
+credentials-file: /data/data/com.termux/files/home/.cloudflared/SEU_TUNNEL_ID.json
+
+# Métricas locais (nenhuma porta é aberta na rede).
+metrics: 127.0.0.1:20241
+no-autoupdate: true
+
+# Termux/Android: força IPv4 e HTTP/2. O QUIC (UDP) costuma ser bloqueado
+# em redes móveis e o resolvedor IPv6 do Android não funciona no Termux.
+edge-ip-version: "4"
+protocol: http2
+
+ingress:
+  - hostname: SEU_DOMINIO
+    service: http://127.0.0.1:8080
+    originRequest:
+      connectTimeout: 30s
+      # Conexões ociosas do celular podem ser derrubadas pelo Android.
+      # 90 s é um meio-termo entre latência e consumo de bateria.
+      keepAliveTimeout: 90s
+      httpHostHeader: SEU_DOMINIO
+  # Qualquer outro hostname recebe 404 do próprio cloudflared.
+  - service: http_status:404

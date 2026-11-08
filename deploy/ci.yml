@@ -1,0 +1,50 @@
+# Workflow de CI do GitHub Actions.
+#
+# Este arquivo fica em deploy/ para poder ser versionado por qualquer token.
+# Para ativar o CI, copie-o para o caminho que o GitHub reconhece:
+#
+#   mkdir -p .github/workflows && cp deploy/ci.yml .github/workflows/ci.yml
+#   git add .github/workflows/ci.yml && git commit -m "ci: ativa o workflow"
+#
+# Isso exige um token com o escopo `workflow`. Sem ele, o GitHub recusa o
+# push de qualquer arquivo em .github/workflows/.
+#
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.x"
+          cache: true
+
+      - name: Formatação
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Arquivos fora do gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Testes
+        run: go test ./...
+
+      - name: Testes com detector de corrida
+        run: go test -race ./...
+
+      - name: Build arm64 (Termux)
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o /tmp/pocketserve-arm64 .
