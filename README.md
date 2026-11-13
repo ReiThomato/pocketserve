@@ -88,10 +88,12 @@ locally. Details in [docs/ARQUITETURA.md](docs/ARQUITETURA.md) (Portuguese).
 
 ## Quick start
 
-Requirements: an Android phone with **arm64-v8a**, [Termux](https://termux.dev/), and **Go 1.24+**
-on a computer to cross-compile. No root, no Android SDK, no NDK, no C compiler.
+Requirements: an Android phone with **arm64-v8a** and [Termux](https://termux.dev/). No root,
+no Android SDK, no NDK, no C compiler.
 
-**1. Build the static binary** (on your computer):
+**1. Get the binary** — download `pocketserve-arm64` from
+[Releases](https://github.com/ReiThomato/pocketserve/releases/latest), or build it yourself
+with Go 1.24+ on a computer:
 
 ```bash
 git clone https://github.com/ReiThomato/pocketserve.git
