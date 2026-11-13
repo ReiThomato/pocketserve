@@ -1,130 +1,118 @@
-# PocketServe - Beta
+<div align="center">
+  <img src="web/icon.svg" width="88" alt="PocketServe icon" />
+  <h1>PocketServe</h1>
+  <p><strong>Your pocket file server.</strong><br />
+  A single Go binary that turns an old Android phone into a private file server.</p>
 
-**Seu servidor pessoal de bolso.**
+  <p>
+    <img alt="Go 1.24" src="https://img.shields.io/badge/Go-1.24-00ADD8?logo=go&amp;logoColor=white" />
+    <img alt="Platform: Android / Termux arm64" src="https://img.shields.io/badge/platform-Android%20%C2%B7%20Termux%20arm64-3DDC84?logo=android&amp;logoColor=white" />
+    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2EA043" />
+    <img alt="Dependencies: 1" src="https://img.shields.io/badge/dependencies-1-6E7681" />
+  </p>
 
-Servidor de arquivos que roda **dentro de um celular Android**, no [Termux](https://termux.dev/). Binário Go único, frontend embutido, sem banco de dados, sem framework de frontend, sem nuvem obrigatória e sem telemetria.
+  <sub><a href="README.pt-BR.md">Português</a> · <strong>English</strong></sub>
+</div>
 
-O painel abre no navegador de qualquer aparelho na mesma rede Wi-Fi ou em uma VPN privada. Os arquivos ficam no armazenamento do próprio celular — interno ou cartão microSD.
-
-> **Versão pública 1.0.0.** Esta é a primeira versão independente do PocketServe. Ela consolida a linhagem privada 1.10.x em uma numeração pública própria; veja o [CHANGELOG](CHANGELOG.md).
-
----
-
-## O que ele faz
-
-- **Arquivos** — navegar, enviar, baixar, renomear, copiar, mover, criar pastas, editar texto e baixar pastas em ZIP.
-- **Até 8 pastas raiz** — interno e cartão microSD ao mesmo tempo, cada um com um apelido curto (`cartao/...`).
-- **Lixeira por volume** — exclusão vira restauração; retenção configurável (padrão 30 dias).
-- **Backups por snapshot** — conteúdo endereçado por SHA-256, deduplicado, 14 snapshots, um por dia se ativado.
-- **Versões por arquivo** — histórico extraído dos snapshots; baixar ou restaurar uma versão antiga.
-- **Relatório de duplicatas** — grupos por SHA-256, com sugestão de cópia a manter e limpeza segura.
-- **Compartilhamentos** — link público com token, validade e senha opcional, somente leitura.
-- **Autenticação** — senha com PBKDF2, sessão assinada, CSRF, limite de tentativas, TOTP (RFC 6238), códigos de recuperação e aparelhos confiáveis.
-- **Revogação de sessão** — logout invalida o cookie no servidor e sobrevive a reinícios.
-- **Tokens de API** — escopos (`files:read`, `files:write`, `files:delete`, `shares:manage`, `admin`), validade e revogação individual.
-- **Painel de sistema** — CPU, memória, armazenamento por volume, bateria, rede, endereços de acesso e QR code.
-- **Operação** — supervisor com reinício automático, inicialização no boot, log local e atualização com rollback.
-
-## O que ele **não** faz
-
-Para evitar expectativa errada:
-
-- não é multiusuário;
-- não tem WebDAV;
-- não tem aplicativo móvel nativo;
-- não faz sincronização própria (use Syncthing ou scripts pela API);
-- não tem interface de restauração completa de um snapshot (a restauração é por arquivo);
-- não é um serviço de nuvem pública e não deve ser exposto sem TLS, senha forte e 2FA;
-- não substitui um NAS ou um PC servidor em desempenho, redundância ou durabilidade.
-
-A lista completa está em [docs/LIMITACOES.md](docs/LIMITACOES.md).
+> [!NOTE]
+> The web interface and the in-depth documentation are written in Portuguese (pt-BR).
+> The code, the JSON API and this page are language-neutral.
 
 ---
 
-## Como funciona
+## Why this exists
+
+Most people have a spare Android phone in a drawer: enough CPU, enough storage, a battery
+that keeps it alive during a power cut, and no use. PocketServe gives it a job.
+
+- **The hardware is already paid for.** No NAS, no VPS, no monthly bill.
+- **One binary, nothing to install.** The HTTP server, the JSON API and the web panel are the
+  same static executable. No database, no runtime, no frontend build step.
+- **Your files stay on your phone.** No cloud account, no telemetry, no outbound connection
+  required. Access is over your Wi-Fi or a private VPN.
+- **It is a real file manager, not a demo.** Trash, versioned snapshots, duplicate detection
+  and expiring share links are part of the first release.
+
+## Features
+
+| Area | What you get |
+|---|---|
+| **Files** | Browse, upload, download, rename, copy, move, create folders, edit text files and download a whole folder as ZIP |
+| **Roots** | Up to 8 root folders at once, such as internal storage and a microSD card, each with a short alias (`card/...`) |
+| **Trash** | Deleting moves to a per-volume trash with configurable retention (30 days by default) |
+| **Snapshots** | Content-addressed (SHA-256) and deduplicated backups; 14 are kept, one per day when enabled |
+| **File versions** | Per-file history taken from those snapshots, ready to download or restore |
+| **Cleanup** | Duplicate report grouped by SHA-256, with a safe suggestion of which copy to keep |
+| **Sharing** | Read-only public link with token, expiry date and optional password |
+| **Access control** | PBKDF2 password hashing (210,000 iterations), TOTP two-factor, recovery codes and trusted devices |
+| **Sessions** | Signed `HttpOnly` cookie, CSRF protection, login throttling and server-side session revocation |
+| **Automation** | API tokens with scopes (`files:read`, `files:write`, `files:delete`, `shares:manage`, `admin`), expiry and individual revocation |
+| **Operations** | Supervisor with automatic restart, start on boot, local activity log and update with rollback |
+| **Dashboard** | CPU, memory, storage per volume, battery, network, access addresses and a QR code to open the panel |
+
+## What it does not do
+
+Stated up front so nobody expects the wrong thing:
+
+- it is not multi-user;
+- it has no WebDAV;
+- it has no native mobile app;
+- it does not sync by itself (use Syncthing or scripts against the API);
+- it restores files individually, not a whole snapshot through the UI;
+- it is not a public cloud service and must not be exposed without TLS, a strong password and 2FA;
+- it does not replace a NAS or a desktop server in throughput, redundancy or durability.
+
+The full list is in [docs/LIMITACOES.md](docs/LIMITACOES.md) (Portuguese).
+
+## How it works
 
 ```
- Navegador (LAN / Tailscale / proxy HTTPS)
-        │  HTTP :8080  (ou HTTPS :8443)
+ Browser (LAN / Tailscale / HTTPS proxy)
+        │  HTTP :8080  (or HTTPS :8443)
         ▼
 ┌──────────────────────────────────────────────────┐
-│  PocketServe — um processo Go, binário estático  │
-│  rotas · auth · arquivos · shares · backups      │
-│  frontend embutido via go:embed                  │
+│  PocketServe — one Go process, static binary     │
+│  routes · auth · files · shares · backups        │
+│  web panel embedded through go:embed             │
 └──────────────────────────────────────────────────┘
         │
         ▼
-  /sdcard  →  cartão microSD (opcional)
+  /sdcard  →  microSD card (optional)
   ~/.pocketserve/config.json · shares.json
                  tokens.json · activity.jsonl
 ```
 
-- **Um único processo.** A API JSON e o painel são servidos pelo mesmo binário.
-- **Sem banco de dados.** O estado fica em arquivos JSON no diretório `~/.pocketserve`.
-- **Sem build de frontend.** HTML, CSS e JavaScript são embutidos no binário com `go:embed`.
-- **Uma dependência externa:** [`skip2/go-qrcode`](https://github.com/skip2/go-qrcode), usada apenas para gerar QR codes localmente.
+One process, no database: state lives in JSON files under `~/.pocketserve`. The only external
+dependency is [`skip2/go-qrcode`](https://github.com/skip2/go-qrcode), used to draw QR codes
+locally. Details in [docs/ARQUITETURA.md](docs/ARQUITETURA.md) (Portuguese).
 
-Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+## Quick start
 
----
+Requirements: an Android phone with **arm64-v8a**, [Termux](https://termux.dev/), and **Go 1.24+**
+on a computer to cross-compile. No root, no Android SDK, no NDK, no C compiler.
 
-## Requisitos
-
-### No celular
-
-- Android com **arm64-v8a** (a grande maioria dos aparelhos dos últimos anos).
-- [Termux](https://fido.termux.dev/) instalado (testado com 0.118.3).
-- Acesso ao armazenamento compartilhado (`termux-setup-storage`).
-- Para uso contínuo: carregador conectado, Termux sem restrição de bateria e, de preferência, uma rede Wi-Fi estável.
-
-Não é necessário root. O servidor roda como um aplicativo comum dentro do Termux.
-
-### No computador (para compilar)
-
-- **Go 1.24 ou superior**.
-- `adb` (Android Platform Tools) para enviar o binário, ou qualquer forma de copiar arquivos para o celular.
-- Nenhum SDK Android, NDK ou compilador C é necessário: o build é Go puro com `CGO_ENABLED=0`.
-
----
-
-## Início rápido
-
-### 1. Compilar no computador
+**1. Build the static binary** (on your computer):
 
 ```bash
-git clone https://github.com/SEU_USUARIO/pocketserve.git
+git clone https://github.com/ReiThomato/pocketserve.git
 cd pocketserve
 
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
   go build -trimpath -ldflags "-s -w" -o pocketserve-arm64 .
 ```
 
-O resultado é um binário estático para Android/Termux. Confira:
+**2. Prepare the phone** (in Termux):
 
 ```bash
-file pocketserve-arm64
-# pocketserve-arm64: ELF 64-bit LSB executable, ARM aarch64, statically linked, ...
-```
-
-### 2. Preparar o celular
-
-No Termux:
-
-```bash
-termux-setup-storage     # aceite o pedido de acesso às fotos/arquivos
-termux-wake-lock         # mantém o processo vivo com a tela apagada
+termux-setup-storage
+termux-wake-lock
 pkg update && pkg upgrade
 ```
 
-No Android, abra **Configurações → Apps → Termux** e:
+Also set Termux to **unrestricted** battery usage and enable autostart, otherwise Android will
+kill the process when the screen turns off.
 
-- permita **Autostart** (se o fabricante oferecer);
-- escolha **Sem restrições** em economia de bateria;
-- trave o Termux no menu de apps recentes (evita encerramento acidental).
-
-### 3. Enviar e instalar
-
-No computador, com o celular conectado por USB e depuração ativada:
+**3. Install and open it:**
 
 ```bash
 adb shell mkdir -p /sdcard/Download/PocketServe
@@ -132,166 +120,65 @@ adb push pocketserve-arm64 /sdcard/Download/PocketServe/
 adb push deploy/install.sh deploy/ctl.sh deploy/syncthing-rc.sh \
   deploy/rollback-guardar.sh deploy/backup-estado.sh \
   /sdcard/Download/PocketServe/
-```
 
-Se você não usa Syncthing, pode omitir `deploy/syncthing-rc.sh`; o instalador avisa e segue sem supervisioná-lo.
-
-No Termux:
-
-```bash
+# then, in Termux:
 bash /sdcard/Download/PocketServe/install.sh
 ```
 
-Saída esperada (resumida):
+The installer prints the LAN address. Open `http://YOUR_PHONE_IP:8080` from any device on the
+same network and set the administrator password on first access.
 
-```
-== PocketServe - instalacao ==
-Destino: /data/data/com.termux/files/home/.pocketserve
-...
-PocketServe iniciado (PID ...).
-Painel local:    http://127.0.0.1:8080
-Rede Wi-Fi:      http://SEU_ENDERECO_IP:8080
-...
-Instalacao concluida.
-```
+Step-by-step with expected output, updates and rollback:
+[docs/INSTALACAO.md](docs/INSTALACAO.md) and [docs/OPERACAO.md](docs/OPERACAO.md) (Portuguese).
 
-O instalador **preserva** um `config.json` existente. Para uma instalação limpa, remova `~/.pocketserve` antes.
+## Security in one sentence
 
-### 4. Primeiro acesso
+The model assumes **a single user, access over a local network or private VPN, and no port
+forwarded on the router**. If you decide to expose it to the internet, read
+[docs/SEGURANCA.md](docs/SEGURANCA.md) and [docs/ACESSO-REMOTO.md](docs/ACESSO-REMOTO.md)
+first and use HTTPS, a strong password and 2FA.
 
-No navegador de outro aparelho na mesma Wi-Fi:
-
-```
-http://SEU_ENDERECO_IP:8080
-```
-
-Na primeira abertura, o painel pede para criar a senha do administrador (mínimo de 8 caracteres). Depois disso, entre com a senha.
-
-Para descobrir o endereço no próprio celular:
+## Tests
 
 ```bash
-pocketserve status
-pocketserve url
+make test     # go test ./...
+make race     # go test -race ./...
+make vet      # go vet ./...
+make cover    # coverage
+make arm64    # arm64 binary for Termux
 ```
 
-### 5. Atualizar
+`deploy/verify-local.sh` starts a disposable instance, runs 80 end-to-end HTTP checks and shuts
+it down. Results and coverage notes: [docs/VERIFICACAO.md](docs/VERIFICACAO.md) (Portuguese).
 
-```bash
-# no PC: recompilar
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
-  go build -trimpath -ldflags "-s -w" -o pocketserve-arm64 .
+## Documentation
 
-# no Termux: guardar o binário atual para rollback (opcional, mas recomendado)
-bash /sdcard/Download/PocketServe/rollback-guardar.sh
+The complete manual is in Portuguese, under [`docs/`](docs/):
 
-# no PC: enviar o binário novo
-adb push pocketserve-arm64 /sdcard/Download/PocketServe/
-
-# no Termux: instalar por cima, preservando o config.json
-bash /sdcard/Download/PocketServe/install.sh
-```
-
-O `config.json` é preservado e o supervisor reinicia o serviço. Passo a passo completo, com verificação e rollback, em [docs/OPERACAO.md](docs/OPERACAO.md).
-
----
-
-## Segurança em uma frase
-
-O modelo assume **um único usuário, acesso por rede local ou VPN privada e nenhuma porta aberta no roteador**. Se você decidir expor o servidor à internet, leia [docs/SEGURANCA.md](docs/SEGURANCA.md) e [docs/ACESSO-REMOTO.md](docs/ACESSO-REMOTO.md) antes: use HTTPS, senha forte e 2FA.
-
-Recursos de segurança já implementados:
-
-- senha com PBKDF2-HMAC-SHA256 (210.000 iterações);
-- cookie de sessão `HttpOnly`, `SameSite=Lax`, assinado com HMAC e com ID único por login;
-- CSRF por cabeçalho customizado + verificação de `Origin`;
-- bloqueio progressivo após 5 tentativas de login falhas;
-- TOTP de 6 dígitos, janela de tolerância de 30 s, códigos de recuperação com hash;
-- tokens de API com escopo, validade e hash em disco;
-- validação de caminho contra traversal, symlinks e raízes não configuradas;
-- cabeçalhos de segurança e CSP restritiva;
-- logs de atividade locais (500 entradas em memória, arquivo JSONL).
-
----
-
-## Estrutura do repositório
-
-```
-.
-├── *.go                  código do servidor (Go 1.24, sem CGO)
-├── *_test.go             testes automatizados
-├── web/                  frontend embutido (HTML/CSS/JS + ícones)
-├── deploy/
-│   ├── install.sh        instalador para Termux
-│   ├── ctl.sh            start/stop/status/supervisor
-│   ├── syncthing-rc.sh   supervisor opcional do Syncthing
-│   ├── backup-estado.sh  backup do estado do servidor
-│   ├── rollback-guardar.sh  guarda o binário antes de atualizar
-│   ├── restore-snapshot.sh  restaura snapshot em pasta de preparo
-│   ├── verify-all.sh     verificação HTTP de ponta a ponta
-│   ├── verify-local.sh   sobe instância descartável e roda a verificação
-│   ├── ci.yml            workflow de CI pronto para ativar
-│   └── cloudflared.example.yml  modelo genérico de túnel
-├── docs/                 documentação completa
-├── Makefile
-├── go.mod / go.sum
-├── CONTRIBUTING.md
-├── SECURITY.md
-├── CHANGELOG.md
-└── LICENSE (MIT)
-```
-
----
-
-## Documentação
-
-| Documento | Para quê |
+| Document | For |
 |---|---|
-| [Instalação](docs/INSTALACAO.md) | do zero ao primeiro login, com comandos e saídas esperadas |
-| [Configuração](docs/CONFIGURACAO.md) | flags, `config.json`, variáveis de ambiente e ajustes |
-| [Uso](docs/USO.md) | cada tela e operação do painel |
-| [Arquitetura](docs/ARQUITETURA.md) | módulos, fluxo de requisição, decisões e limites |
-| [Armazenamento](docs/ARMAZENAMENTO.md) | raízes, apelidos, cartão SD, lixeira e reserva de disco |
-| [Backup e recuperação](docs/BACKUP-E-RECUPERACAO.md) | snapshots, versões, restauração e desastres |
-| [Operação](docs/OPERACAO.md) | supervisor, logs, atualização, rollback e diagnóstico |
-| [Segurança](docs/SEGURANCA.md) | modelo de ameaças, autenticação e riscos residuais |
-| [Acesso remoto](docs/ACESSO-REMOTO.md) | LAN, Tailscale, Cloudflare Tunnel e HTTPS |
-| [Sincronização](docs/SINCRONIZACAO.md) | Syncthing, rsync e automação pela API |
-| [API](docs/API.md) | rotas, escopos, exemplos `curl` e códigos de erro |
-| [Hardware](docs/HARDWARE.md) | medições, limites térmicos e o que é declarado/não verificado |
-| [História do desenvolvimento](docs/HISTORIA-DO-DESENVOLVIMENTO.md) | problemas reais, causas, soluções e resultados |
-| [Limitações](docs/LIMITACOES.md) | o que não existe ou não é garantido |
-| [FAQ](docs/FAQ.md) | dúvidas e problemas comuns |
-| [Roadmap](docs/ROADMAP.md) | ideias planejadas (não implementadas) |
-| [Terceiros](docs/TERCEIROS.md) | dependências e créditos |
-| [Verificação](docs/VERIFICACAO.md) | testes executados e como reproduzir |
-| [Relatório de publicação](docs/RELATORIO-DE-PUBLICACAO.md) | o que mudou nesta versão pública |
+| [Instalação](docs/INSTALACAO.md) | from zero to the first login, with commands and expected output |
+| [Configuração](docs/CONFIGURACAO.md) | flags, `config.json`, environment variables |
+| [Uso](docs/USO.md) | every panel screen and operation |
+| [Arquitetura](docs/ARQUITETURA.md) | modules, request flow, decisions and limits |
+| [Armazenamento](docs/ARMAZENAMENTO.md) | roots, aliases, SD card, trash and disk reserve |
+| [Backup e recuperação](docs/BACKUP-E-RECUPERACAO.md) | snapshots, versions, restore and disasters |
+| [Operação](docs/OPERACAO.md) | supervisor, logs, update, rollback and diagnostics |
+| [Segurança](docs/SEGURANCA.md) | threat model, authentication and residual risks |
+| [Acesso remoto](docs/ACESSO-REMOTO.md) | LAN, Tailscale, Cloudflare Tunnel and HTTPS |
+| [Sincronização](docs/SINCRONIZACAO.md) | Syncthing, rsync and API automation |
+| [API](docs/API.md) | routes, scopes, `curl` examples and error codes |
+| [Hardware](docs/HARDWARE.md) | measurements, thermal limits, what is and is not verified |
+| [Limitações](docs/LIMITACOES.md) | what does not exist or is not guaranteed |
+| [FAQ](docs/FAQ.md) | common questions and problems |
 
----
+## License
 
-## Testes
+Distributed under the **MIT** license. See [LICENSE](LICENSE).
 
-```bash
-make test        # go test ./...
-make race        # go test -race ./...
-make vet         # go vet ./...
-make cover       # cobertura
-make arm64       # binário arm64 para Termux
-```
+PocketServe started as a personal file-server project on a phone. This public version was
+reorganised, renamed and documented independently. Library and tool credits are in
+[docs/TERCEIROS.md](docs/TERCEIROS.md).
 
-A verificação HTTP completa precisa de uma instância limpa. O script `deploy/verify-local.sh` sobe uma instância temporária, roda as 80 verificações e encerra:
-
-```bash
-bash deploy/verify-local.sh
-```
-
-Resultados da última execução e o que cada teste cobre: [docs/VERIFICACAO.md](docs/VERIFICACAO.md).
-
----
-
-## Licença e créditos
-
-Distribuído sob a licença **MIT**. Veja [LICENSE](LICENSE).
-
-O PocketServe nasceu de um projeto pessoal de servidor de arquivos em celular. Esta versão pública foi reorganizada, renomeada e documentada de forma independente. Créditos de bibliotecas e ferramentas em [docs/TERCEIROS.md](docs/TERCEIROS.md).
-
-**Não há vínculo com fabricantes de celulares, com o Termux, com o Tailscale ou com a Cloudflare.** Marcas citadas pertencem aos seus respectivos donos.
+**No affiliation with phone manufacturers, Termux, Tailscale or Cloudflare.** Trademarks belong
+to their respective owners.
