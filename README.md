@@ -114,7 +114,8 @@ pkg update && pkg upgrade
 Also set Termux to **unrestricted** battery usage and enable autostart, otherwise Android will
 kill the process when the screen turns off.
 
-**3. Install and open it:**
+**3. Install and open it** — with `pocketserve-arm64` and the `deploy/` folder from this
+repository in the same directory:
 
 ```bash
 adb shell mkdir -p /sdcard/Download/PocketServe
